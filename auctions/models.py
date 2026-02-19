@@ -9,7 +9,7 @@ class User(AbstractUser):
     pass
 
 class Category(models.Model):
-    name = models.CharField(max_length=64)
+    name = models.CharField(max_length=64, unique=True)
     description = models.CharField(max_length=500)
 
     def __str__(self):
@@ -18,7 +18,7 @@ class Category(models.Model):
 class AuctionListing(models.Model):
     title = models.CharField(max_length=64)
     description = models.CharField(max_length=500)
-    image_url = models.URLField()
+    image_url = models.URLField(blank=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="displayed_items")
     initial_price = models.DecimalField(max_digits=10, decimal_places=2)
     is_active = models.BooleanField(default=True)
@@ -27,9 +27,9 @@ class AuctionListing(models.Model):
 
     def __str__(self):
         if self.is_active:
-            return f"{self.name} available. Current price: {self.current_price}."
+            return f"{self.title} available. Current price: {self.current_price:,} €"
         else:
-            return f"Listing {self.name} no longer available."
+            return f"Listing {self.title} no longer available."
         
     @property
     def current_price(self):

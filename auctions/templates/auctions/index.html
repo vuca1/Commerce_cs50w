@@ -1,13 +1,28 @@
 {% extends "auctions/layout.html" %}
 
+{% load humanize %}
+
 {% block body %}
     <h2>Active Listings</h2>
 
-    <ul>
+    <table class="table">
+        <tr>
+            <th scope="col">Title</th>
+            <th scope="col">Decription</th>
+            <th scope="col">Current Price</th>
+            <th scope="col">Photo</th>
+        </tr>
         {% for listing in listings %}
-            <li>{{ listing }}</li>
-        {% empty %}
-            <li>No listings available. Try adding a new one.</li>
+            <tr>
+                <td>{{ listing.title }}</td>
+                <td>{{ listing.decsription }}</td>
+                <td>{{ listing.current_price|intcomma }} €</td>
+                {% if listing.image_url %}
+                    <td><a href="{{ listing.image_url }}" target="_blank"><img style="height: 50px; width: auto;" src="{{ listing.image_url }}" alt="image of a listing item"></a></td>
+                {% else %}
+                    <td>No Image</td>
+                {% endif %}
+            </tr>
         {% endfor %}
-    </ul>
+    </table>
 {% endblock %}

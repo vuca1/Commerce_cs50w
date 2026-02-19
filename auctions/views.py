@@ -4,6 +4,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
+from decimal import Decimal
+
 from .models import User, AuctionListing, Bid, Category, Comment
 
 
@@ -69,14 +71,21 @@ def create_listing(request):
     if request.method == "POST":
         title = request.POST["title"]
         description = request.POST["description"]
-        initial_price = request.POST["price"]
-        image_url = request.POST["image_url"]
-        category = request.POST["category"]
+        initial_price = Decimal(request.POST["price"])
+        image_url = request.POST.get("image_url")
+        category_id = request.POST.get("category")
 
-        new_listing = AuctionListing(title=title, description=description, initial_price=initial_price, image_url=image_url, category=category)
+        category = None
+        if category_id:
+            category = Category.objects.get(id=category_id)
+
+        new_listing = AuctionListing(title=title, description=description, initial_price=initial_price, image_url=image_url, category=category, creator=request.user)
         new_listing.save()
 
-    # TODO - finish writing data to db
+        return HttpResponseRedirect(reverse("index"))
 
-    return render(request, "auctions/create_listing.html")
+
+    return render(request, "auctions/create_listing.html", {
+        "categories": Category.objects.all()
+    })
         
