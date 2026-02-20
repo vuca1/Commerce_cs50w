@@ -5,8 +5,9 @@
 {% block body %}
     <h2>Active Listings</h2>
 
-    <table class="table">
+    <table class="table table-hover">
         <tr>
+            <th scope="col"></th>
             <th scope="col">Title</th>
             <th scope="col">Decription</th>
             <th scope="col">Current Price</th>
@@ -14,11 +15,12 @@
         </tr>
         {% for listing in listings %}
             <tr>
+                <td><a href="{% url 'listing' listing.id %}"><button type="button" class="btn btn-outline-primary">View</button></a></td>
                 <td>{{ listing.title }}</td>
-                <td>{{ listing.decsription }}</td>
+                <td>{{ listing.description }}</td>
                 <td>{{ listing.current_price|intcomma }} €</td>
                 {% if listing.image_url %}
-                    <td><a href="{{ listing.image_url }}" target="_blank"><img style="height: 50px; width: auto;" src="{{ listing.image_url }}" alt="image of a listing item"></a></td>
+                    <td><a href="{{ listing.image_url }}" target="_blank"><img style="height: 50px; width: auto; border-radius: 5px;" src="{{ listing.image_url }}" alt="image of a listing item"></a></td>
                 {% else %}
                     <td>No Image</td>
                 {% endif %}

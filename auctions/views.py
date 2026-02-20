@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
 from decimal import Decimal
@@ -11,7 +11,7 @@ from .models import User, AuctionListing, Bid, Category, Comment
 
 def index(request):
     return render(request, "auctions/index.html", {
-        "listings": AuctionListing.objects.all()
+        "listings": AuctionListing.objects.filter(is_active=True)
     })
 
 
@@ -89,3 +89,19 @@ def create_listing(request):
         "categories": Category.objects.all()
     })
         
+def listing(request, listing_id):
+    listing = get_object_or_404(AuctionListing, id=listing_id)
+
+    if request.method == "POST":
+        content = request.POST.get("content")
+
+        if content:
+            new_comment = Comment(content=content, author=request.user, item=listing)
+            new_comment.save()
+
+        return redirect("listing", listing_id=listing_id)
+
+    return render(request, "auctions/listing.html", {
+        "listing": listing,
+        "comments": listing.comments.order_by("created_at")
+    })

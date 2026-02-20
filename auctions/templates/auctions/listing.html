@@ -1,0 +1,52 @@
+{% extends "auctions/layout.html" %}
+
+{% load humanize %}
+
+{% block body %}
+
+    <div class="container">
+        <div class="row">
+            <p><b>Title:</b> {{ listing.title }}</p>
+        </div>
+        <div class="row">
+            <p><b>Description:</b> {{ listing.description }}</p>
+        </div>
+        <div class="row">
+            <p><b>Price:</b> {{ listing.current_price|intcomma }} €</p>
+        </div>
+        <div class="row justify-content-center">
+            {% if listing.image_url %}
+                <a href="{{ listing.img_url }}"></a><img style="height: 200px; width: auto; border-radius: 5px;" src="{{ listing.image_url }}" alt="{{ listing.description }}">
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <form action="{% url 'listing' listing.id %}" method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <input class="form-control" type="text" name="content" placeholder="write a comment..." required>
+                    </div>
+                    <div class="mb-3">
+                        <button class="btn btn-outline-primary" type="submit">Create</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            {% for comment in comments %}
+                <p><b>{{ comment.author }}:</b> {{ comment.content }} ({{  comment.created_at }})</p>
+            {% empty %}
+                <p>No comments.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock %}
