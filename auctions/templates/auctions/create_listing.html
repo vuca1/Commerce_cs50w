@@ -10,6 +10,8 @@
 
     <form action="{% url 'create_listing' %}" method="post">
         {% csrf_token %}
+        {{ form }}
+        <!--
         <div class="form-group">
             <input type="text" name="title" placeholder="title..." autofocus required>
         </div>
@@ -33,6 +35,7 @@
                 {% endfor %}
             </select>
         </div>
+        -->
         <input class="btn btn-primary" type="submit" value="Create">
     </form>
 {% endblock %}

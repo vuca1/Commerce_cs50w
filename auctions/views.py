@@ -1,13 +1,47 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django import forms
 
 from decimal import Decimal
 
 from .models import User, AuctionListing, Bid, Category, Comment
 
+class ListingForm(forms.Form):
+    title = forms.CharField(
+        label="Title",
+        required=True,
+        max_length=50
+    )
+    description = forms.CharField(
+        label="Description",
+        required=True,
+        max_length=500,
+        widget=forms.Textarea
+    )
+    initial_price = forms.DecimalField(
+        label="Initial price",
+        min_value=0,
+        required=True
+    )
+    image_url = forms.URLField(
+        label="Image URL",
+        required=False
+    )
+    category = forms.ModelChoiceField(
+        queryset=Category.objects.all(),
+        required=False,
+        empty_label="Select category"
+    )
+
+class CommentForm(forms.Form):
+    content = forms.CharField(
+        label="Comment",
+        required=True
+    )
 
 def index(request):
     return render(request, "auctions/index.html", {
@@ -66,9 +100,10 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
 
-
+@login_required
 def create_listing(request):
     if request.method == "POST":
+        # TODO: convert to django forms
         title = request.POST["title"]
         description = request.POST["description"]
         initial_price = Decimal(request.POST["price"])
@@ -86,12 +121,14 @@ def create_listing(request):
 
 
     return render(request, "auctions/create_listing.html", {
-        "categories": Category.objects.all()
+        "categories": Category.objects.all(),
+        "form": ListingForm()
     })
         
 def listing(request, listing_id):
     listing = get_object_or_404(AuctionListing, id=listing_id)
 
+    # TODO: convert to django forms
     if request.method == "POST":
         content = request.POST.get("content")
 
@@ -103,5 +140,6 @@ def listing(request, listing_id):
 
     return render(request, "auctions/listing.html", {
         "listing": listing,
-        "comments": listing.comments.order_by("created_at")
+        "comments": listing.comments.order_by("created_at"),
+        "form": CommentForm()
     })

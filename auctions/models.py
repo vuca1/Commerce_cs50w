@@ -61,3 +61,6 @@ class Comment(models.Model):
     def __str__(self):
         return f"{self.item}: {self.author} - {self.content}"
 
+class Watchlist(models.Model):
+    items = ""
+    user = ""
