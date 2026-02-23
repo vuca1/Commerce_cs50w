@@ -37,6 +37,13 @@ class ListingForm(forms.Form):
         empty_label="Select category"
     )
 
+class BiddingForm(forms.Form):
+    amount = forms.DecimalField(
+        label="Amount",
+        min_value=0,
+        required=True
+    )
+
 class CommentForm(forms.Form):
     content = forms.CharField(
         label="Comment",
@@ -141,29 +148,26 @@ def listing(request, listing_id):
     listing = get_object_or_404(AuctionListing, id=listing_id)
 
     if request.method == "POST":
-        
-        if "submit_comment" in request.POST:
-            comment_form = CommentForm(request.POST)
-            if comment_form.is_valid():
-                content = comment_form.cleaned_data["content"]
-            else:
-                return render(request, "auctions/listing.html", {
-                    "listing": listing,
-                    "comments": listing.comments.order_by("created_at"),
-                    "comment_form": comment_form
-                })
+        comment_form = CommentForm(request.POST)
+        if comment_form.is_valid():
+            content = comment_form.cleaned_data["content"]
+        else:
+            return render(request, "auctions/listing.html", {
+                "listing": listing,
+                "comments": listing.comments.order_by("created_at"),
+                "comment_form": comment_form
+            })
 
-            new_comment = Comment(content=content, author=request.user, item=listing)
-            new_comment.save()
-            return redirect("listing", listing_id=listing_id)
+        new_comment = Comment(content=content, author=request.user, item=listing)
+        new_comment.save()
+        return redirect("listing", listing_id=listing_id)
         
-        elif "submit_watchlist" in request.POST:
-            pass # TODO - watchlist model and many-to-many model to 
 
     return render(request, "auctions/listing.html", {
         "listing": listing,
         "comments": listing.comments.order_by("created_at"),
-        "comment_form": CommentForm()
+        "comment_form": CommentForm(),
+        "bidding_form": BiddingForm()
     })
 
 @login_required
@@ -178,6 +182,43 @@ def toggle_watchlist(request, listing_id):
     next_url = request.POST.get("next", "index")
 
     return redirect(next_url)
+
+@login_required
+def bid(request, listing_id):
+    listing = get_object_or_404(AuctionListing, id=listing_id)
+
+    if request.method == "POST":
+        bidding_form = BiddingForm(request.POST)
+        if bidding_form.is_valid():
+            amount = bidding_form.cleaned_data["amount"]
+
+            current_price = listing.current_price
+            if amount <= current_price:
+                bidding_form.add_error(
+                    "amount",
+                    f"Bid must be bigher than current price ({current_price:,} €)")
+                return render(request, "auctions/listing.html", {
+                    "listing": listing,
+                    "comment_form": CommentForm(),
+                    "bidding_form": bidding_form
+                })
+
+        else:
+            return render(request, "auctions/listing.html", {
+                "listing": listing,
+                "comment_form": CommentForm(),
+                "bidding_form": bidding_form
+            })
+        
+        new_bid = Bid(
+            bidder=request.user,
+            amount=amount,
+            item=listing)
+        new_bid.save()
+        return redirect("listing", listing_id=listing_id)
+
+
+
 
 @login_required
 def watchlist(request):

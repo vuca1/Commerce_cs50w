@@ -13,7 +13,7 @@
             <p><b>Description:</b> {{ listing.description }}</p>
         </div>
         <div class="row">
-            <p><b>Price:</b> {{ listing.current_price|intcomma }} €</p>
+            <p><b>Current Price:</b> {{ listing.current_price|intcomma }} €</p>
         </div>
         {% if not listing.initial_price == listing.current_price %}
             <div class="row">
@@ -39,6 +39,19 @@
         </form>
     {% endif %}
 
+    <hr class="hr" />
+
+    <!-- bidding form -->
+    <h4>Bid</h4>
+
+    <form action="{% url 'bid' listing.id %}" method="POST">
+        {% csrf_token %}
+        {{ bidding_form }}
+        <button type="submit" class="btn btn-outline-success">Bid</button>
+    </form>
+
+    <hr class="hr" />
+
     <h4>Comments</h2>
 
     <!-- new comment form -->
@@ -63,6 +76,8 @@
         <p>To add a comment you must be logged in.</p>
     {% endif %}
 
+    <hr class="hr" />
+        
     <!-- comments -->
     <div class="container">
         <div class="row">
