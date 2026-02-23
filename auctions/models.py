@@ -6,7 +6,11 @@ from decimal import Decimal
 
 
 class User(AbstractUser):
-    pass
+    watchlist = models.ManyToManyField(
+        "AuctionListing",
+        blank=True,
+        related_name="watchlisted_by"
+    )
 
 class Category(models.Model):
     name = models.CharField(max_length=64, unique=True)
@@ -60,7 +64,3 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"{self.item}: {self.author} - {self.content}"
-
-class Watchlist(models.Model):
-    items = ""
-    user = ""

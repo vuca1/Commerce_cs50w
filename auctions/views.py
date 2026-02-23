@@ -103,17 +103,17 @@ def register(request):
 @login_required
 def create_listing(request):
     if request.method == "POST":
-        form = ListingForm(request.POST)
-        if form.is_valid():
-            title = form.cleaned_data["title"]
-            description = form.cleaned_data["description"]
-            initial_price = form.cleaned_data["initial_price"]
-            image_url = form.cleaned_data["image_url"]
-            category_id = form.cleaned_data["category"]
+        new_listing_form = ListingForm(request.POST)
+        if new_listing_form.is_valid():
+            title = new_listing_form.cleaned_data["title"]
+            description = new_listing_form.cleaned_data["description"]
+            initial_price = new_listing_form.cleaned_data["initial_price"]
+            image_url = new_listing_form.cleaned_data["image_url"]
+            category_id = new_listing_form.cleaned_data["category"]
         else:
             return render(request, "auctions/create_listing.html", {
                 "categories": Category.objects.all(),
-                "form": form
+                "new_listing_form": new_listing_form
             })
 
         category = None
@@ -129,34 +129,58 @@ def create_listing(request):
             creator=request.user)
         new_listing.save()
 
-        return HttpResponseRedirect(reverse("index"))
+        return HttpResponseRedirect(reverse("auctions:index"))
 
 
     return render(request, "auctions/create_listing.html", {
         "categories": Category.objects.all(),
-        "form": ListingForm()
+        "new_listing_form": ListingForm()
     })
         
 def listing(request, listing_id):
     listing = get_object_or_404(AuctionListing, id=listing_id)
 
     if request.method == "POST":
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            content = form.cleaned_data["content"]
-        else:
-            return render(request, "auctions/listing.html", {
-                "listing": listing,
-                "comments": listing.comments.order_by("created_at"),
-                "form": form
-            })
+        
+        if "submit_comment" in request.POST:
+            comment_form = CommentForm(request.POST)
+            if comment_form.is_valid():
+                content = comment_form.cleaned_data["content"]
+            else:
+                return render(request, "auctions/listing.html", {
+                    "listing": listing,
+                    "comments": listing.comments.order_by("created_at"),
+                    "comment_form": comment_form
+                })
 
-        new_comment = Comment(content=content, author=request.user, item=listing)
-        new_comment.save()
-        return redirect("listing", listing_id=listing_id)
+            new_comment = Comment(content=content, author=request.user, item=listing)
+            new_comment.save()
+            return redirect("listing", listing_id=listing_id)
+        
+        elif "submit_watchlist" in request.POST:
+            pass # TODO - watchlist model and many-to-many model to 
 
     return render(request, "auctions/listing.html", {
         "listing": listing,
         "comments": listing.comments.order_by("created_at"),
-        "form": CommentForm()
+        "comment_form": CommentForm()
+    })
+
+@login_required
+def toggle_watchlist(request, listing_id):
+    listing = get_object_or_404(AuctionListing, id=listing_id)
+
+    if listing in request.user.watchlist.all():
+        request.user.watchlist.remove(listing)
+    else:
+        request.user.watchlist.add(listing)
+
+    next_url = request.POST.get("next", "index")
+
+    return redirect(next_url)
+
+@login_required
+def watchlist(request):
+    return render(request, "auctions/watchlist.html", {
+        "watchlist": request.user.watchlist.all()
     })

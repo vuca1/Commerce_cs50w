@@ -27,6 +27,20 @@
         </div>
     </div>
 
+    {% if user.is_authenticated %}
+        <form action="{% url 'toggle_watchlist' listing.id %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}">
+            {% if listing in user.watchlist.all %}
+                <button class="btn btn-outline-danger">Remove from Watchlist</button>
+            {% else %}
+                <button class="btn btn-outline-primary">Add to Watchlist</button>
+            {% endif %}
+        </form>
+    {% endif %}
+
+    <h4>Comments</h2>
+
     <!-- new comment form -->
     {% if user.is_authenticated %}
         <div class="container mt-4">
@@ -34,12 +48,11 @@
                 <div class="col-md-6">
                     <form action="{% url 'listing' listing.id %}" method="post">
                         {% csrf_token %}
-
                         <div class="mb-3">
-                            {{ form }}
+                            {{ comment_form }}
                         </div>
                         <div class="mb-3">
-                            <button class="btn btn-outline-primary" type="submit">Send</button>
+                            <button class="btn btn-outline-primary" type="submit" name="submit_comment">Send</button>
                         </div>
 
                     </form>

@@ -1,0 +1,41 @@
+{% extends "auctions/layout.html" %}
+
+{% load humanize %}
+
+{% block body %}
+    <table class="table table-hover">
+        <tr>
+            <th scope="col">Title</th>
+            <th scope="col">Current Price</th>
+            <th scope="col">Photo</th>
+            <th></th>
+            <th></th>
+        </tr>
+            {% for listing in watchlist %}
+                <tr>
+                    <td>{{ listing.title }}</td>
+                    <td>{{ listing.current_price|intcomma }} €</td>
+                    {% if listing.image_url %}
+                        <td><a href="{{ listing.image_url }}" target="_blank"><img style="height: 50px; width: auto; border-radius: 5px;" src="{{ listing.image_url }}" alt="image of a listing item"></a></td>
+                    {% else %}
+                        <td>No Image</td>
+                    {% endif %}
+                    <td>
+                        <form action="{% url 'listing' listing.id %}" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-primary">View</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form action="{% url 'toggle_watchlist' listing.id %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                            <button type="submit" class="btn btn-outline-danger">Remove</button>
+                    </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <p>No listings in your watchlist so far.</p>
+            {% endfor %}
+    </table>
+{% endblock %}
