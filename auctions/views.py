@@ -103,18 +103,30 @@ def register(request):
 @login_required
 def create_listing(request):
     if request.method == "POST":
-        # TODO: convert to django forms
-        title = request.POST["title"]
-        description = request.POST["description"]
-        initial_price = Decimal(request.POST["price"])
-        image_url = request.POST.get("image_url")
-        category_id = request.POST.get("category")
+        form = ListingForm(request.POST)
+        if form.is_valid():
+            title = form.cleaned_data["title"]
+            description = form.cleaned_data["description"]
+            initial_price = form.cleaned_data["initial_price"]
+            image_url = form.cleaned_data["image_url"]
+            category_id = form.cleaned_data["category"]
+        else:
+            return render(request, "auctions/create_listing.html", {
+                "categories": Category.objects.all(),
+                "form": form
+            })
 
         category = None
         if category_id:
             category = Category.objects.get(id=category_id)
 
-        new_listing = AuctionListing(title=title, description=description, initial_price=initial_price, image_url=image_url, category=category, creator=request.user)
+        new_listing = AuctionListing(
+            title=title,
+            description=description,
+            initial_price=initial_price, 
+            image_url=image_url,
+            category=category,
+            creator=request.user)
         new_listing.save()
 
         return HttpResponseRedirect(reverse("index"))
@@ -128,14 +140,19 @@ def create_listing(request):
 def listing(request, listing_id):
     listing = get_object_or_404(AuctionListing, id=listing_id)
 
-    # TODO: convert to django forms
     if request.method == "POST":
-        content = request.POST.get("content")
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            content = form.cleaned_data["content"]
+        else:
+            return render(request, "auctions/listing.html", {
+                "listing": listing,
+                "comments": listing.comments.order_by("created_at"),
+                "form": form
+            })
 
-        if content:
-            new_comment = Comment(content=content, author=request.user, item=listing)
-            new_comment.save()
-
+        new_comment = Comment(content=content, author=request.user, item=listing)
+        new_comment.save()
         return redirect("listing", listing_id=listing_id)
 
     return render(request, "auctions/listing.html", {

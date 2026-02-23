@@ -22,7 +22,7 @@
         {% endif %}
         <div class="row justify-content-center">
             {% if listing.image_url %}
-                <a href="{{ listing.img_url }}"></a><img style="height: 200px; width: auto; border-radius: 5px;" src="{{ listing.image_url }}" alt="{{ listing.description }}">
+                <a href="{{ listing.image_url }}" target="_blank"><img style="height: 200px; width: auto; border-radius: 5px;" src="{{ listing.image_url }}" alt="{{ listing.description }}"></a>
             {% endif %}
         </div>
     </div>
@@ -39,7 +39,7 @@
                             {{ form }}
                         </div>
                         <div class="mb-3">
-                            <button class="btn btn-outline-primary" type="submit">Create</button>
+                            <button class="btn btn-outline-primary" type="submit">Send</button>
                         </div>
 
                     </form>
