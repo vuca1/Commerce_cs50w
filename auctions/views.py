@@ -46,15 +46,17 @@ class BiddingForm(forms.Form):
 
 class CommentForm(forms.Form):
     content = forms.CharField(
-        label="Comment",
+        label="Add Comment",
         required=True
     )
 
 def index(request):
     return render(request, "auctions/index.html", {
-        "listings": AuctionListing.objects.filter(is_active=True)
+        "listings": AuctionListing.objects.order_by(
+            "-is_active",
+            "-created_at"
+            )
     })
-
 
 def login_view(request):
     if request.method == "POST":
@@ -75,11 +77,9 @@ def login_view(request):
     else:
         return render(request, "auctions/login.html")
 
-
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
-
 
 def register(request):
     if request.method == "POST":
@@ -161,7 +161,6 @@ def listing(request, listing_id):
         new_comment = Comment(content=content, author=request.user, item=listing)
         new_comment.save()
         return redirect("listing", listing_id=listing_id)
-        
 
     return render(request, "auctions/listing.html", {
         "listing": listing,
@@ -185,15 +184,19 @@ def toggle_watchlist(request, listing_id):
 
 @login_required
 def bid(request, listing_id):
+    # TODO: error when trying to bid and listing is closed
     listing = get_object_or_404(AuctionListing, id=listing_id)
 
     if request.method == "POST":
+        if not listing.is_active:
+            return redirect("listing", listing_id=listing.id)
+
         bidding_form = BiddingForm(request.POST)
         if bidding_form.is_valid():
             amount = bidding_form.cleaned_data["amount"]
 
             current_price = listing.current_price
-            if amount <= current_price:
+            if (listing.initial_price != current_price and amount <= current_price) or amount < listing.initial_price:
                 bidding_form.add_error(
                     "amount",
                     f"Bid must be bigher than current price ({current_price:,} €)")
@@ -217,11 +220,23 @@ def bid(request, listing_id):
         new_bid.save()
         return redirect("listing", listing_id=listing_id)
 
+@login_required
+def close_listing(request, listing_id):
+    listing = get_object_or_404(AuctionListing, id=listing_id)
 
+    if listing.creator != request.user:
+        return redirect("listing", listing_id=listing.id)
+    
+    listing.is_active = False
+    listing.save()
 
-
+    return redirect("listing", listing_id=listing.id)
+        
 @login_required
 def watchlist(request):
     return render(request, "auctions/watchlist.html", {
-        "watchlist": request.user.watchlist.all()
+        "watchlist": request.user.watchlist.all().order_by(
+            "-is_active",
+            "-created_at"
+            )
     })

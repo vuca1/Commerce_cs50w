@@ -10,9 +10,14 @@
             <th scope="col">Photo</th>
             <th></th>
             <th></th>
+            <th scope="col">Status</th>
         </tr>
             {% for listing in watchlist %}
-                <tr>
+                <tr
+                    {% if not listing.is_active %}
+                        class="table-secondary"
+                    {% endif %}
+                >
                     <td>{{ listing.title }}</td>
                     <td>{{ listing.current_price|intcomma }} €</td>
                     {% if listing.image_url %}
@@ -32,6 +37,13 @@
                             <input type="hidden" name="next" value="{{ request.path }}">
                             <button type="submit" class="btn btn-outline-danger">Remove</button>
                     </form>
+                    </td>
+                    <td>
+                        {% if listing.is_active %}
+                            Active
+                        {% else %}
+                            Closed
+                        {% endif %}
                     </td>
                 </tr>
             {% empty %}

@@ -42,6 +42,11 @@ class AuctionListing(models.Model):
             return highest_bid.amount
         else:
             return self.initial_price
+        
+    @property
+    def highest_bidder(self):
+        highest_bid = self.bids.order_by("-amount").first()
+        return highest_bid.bidder if highest_bid else None
 
 class Bid(models.Model):
     bidder = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bids")

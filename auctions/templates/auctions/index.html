@@ -12,9 +12,13 @@
             <th scope="col">Decription</th>
             <th scope="col">Current Price</th>
             <th scope="col">Photo</th>
+            <th scope="col">Status</th>
         </tr>
         {% for listing in listings %}
-            <tr>
+            <tr {% if not listing.is_active %}
+                    class="table-secondary"
+                {% endif %}
+            >
                 <td><a href="{% url 'listing' listing.id %}"><button type="button" class="btn btn-outline-primary">View</button></a></td>
                 <td>{{ listing.title }}</td>
                 <td>{{ listing.description }}</td>
@@ -24,6 +28,13 @@
                 {% else %}
                     <td>No Image</td>
                 {% endif %}
+                <td>
+                    {% if listing.is_active %}
+                        Active
+                    {% else %}
+                        Closed
+                    {% endif %}
+                </td>
             </tr>
         {% endfor %}
     </table>
