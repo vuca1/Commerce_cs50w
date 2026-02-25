@@ -1,0 +1,26 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+    {% for category in categories %}
+        <div class="container text-center">
+            <div class="row">
+                <div class="col-2">
+                    <b>{{ category.name }}</b>
+                </div>
+                <div class="col">
+                    {{ category.description }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <a href="{% url 'index' %}?category={{ category.id }}">
+                        <button class="btn btn-outline-primary">View {{ category.name }}</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <hr class="hr" />
+    {% endfor %}
+
+{% endblock %}

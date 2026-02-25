@@ -17,7 +17,7 @@ class Category(models.Model):
     description = models.CharField(max_length=500)
 
     def __str__(self):
-        return f"{self.name} - {self.description}"
+        return f"{self.name}"
 
 class AuctionListing(models.Model):
     title = models.CharField(max_length=64)

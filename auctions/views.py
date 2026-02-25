@@ -10,6 +10,7 @@ from decimal import Decimal
 
 from .models import User, AuctionListing, Bid, Category, Comment
 
+
 class ListingForm(forms.Form):
     title = forms.CharField(
         label="Title",
@@ -34,7 +35,7 @@ class ListingForm(forms.Form):
     category = forms.ModelChoiceField(
         queryset=Category.objects.all(),
         required=False,
-        empty_label="Select category"
+        empty_label="-Select category-"
     )
 
 class BiddingForm(forms.Form):
@@ -51,11 +52,19 @@ class CommentForm(forms.Form):
     )
 
 def index(request):
+    listings = AuctionListing.objects.all()
+
+    category_id = request.GET.get("category")
+    if category_id:
+        listings = listings.filter(category=category_id)
+
+    listings = listings.order_by(
+        "-is_active",
+        "-created_at"
+    )
+
     return render(request, "auctions/index.html", {
-        "listings": AuctionListing.objects.order_by(
-            "-is_active",
-            "-created_at"
-            )
+        "listings": listings
     })
 
 def login_view(request):
@@ -239,4 +248,9 @@ def watchlist(request):
             "-is_active",
             "-created_at"
             )
+    })
+
+def categories(request):
+    return render(request, "auctions/categories.html", {
+        "categories": Category.objects.all()
     })
