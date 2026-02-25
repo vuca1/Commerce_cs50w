@@ -125,7 +125,7 @@ def create_listing(request):
             description = new_listing_form.cleaned_data["description"]
             initial_price = new_listing_form.cleaned_data["initial_price"]
             image_url = new_listing_form.cleaned_data["image_url"]
-            category_id = new_listing_form.cleaned_data["category"]
+            category_id = new_listing_form.cleaned_data["category"].id
         else:
             return render(request, "auctions/create_listing.html", {
                 "categories": Category.objects.all(),
@@ -145,7 +145,7 @@ def create_listing(request):
             creator=request.user)
         new_listing.save()
 
-        return HttpResponseRedirect(reverse("auctions:index"))
+        return HttpResponseRedirect(reverse("index"))
 
 
     return render(request, "auctions/create_listing.html", {
