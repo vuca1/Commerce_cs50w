@@ -24,7 +24,7 @@ class ListingForm(forms.Form):
         widget=forms.Textarea
     )
     initial_price = forms.DecimalField(
-        label="Initial price",
+        label="Initial price [€]",
         min_value=0,
         required=True
     )
@@ -252,5 +252,5 @@ def watchlist(request):
 
 def categories(request):
     return render(request, "auctions/categories.html", {
-        "categories": Category.objects.all()
+        "categories": Category.objects.all().order_by("name")
     })
